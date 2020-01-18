@@ -23,6 +23,13 @@ This package is composed of a set of utility functions, usable into any Pyramid 
     >>> from pyams_catalog import includeme as include_catalog
     >>> include_catalog(config)
 
+NLTK library must first be initialized before using text indexes:
+
+    >>> import nltk
+    >>> status = nltk.download('punkt') and nltk.download('snowball_data')
+    >>> status
+    True
+
 
 Site generations
 ----------------
