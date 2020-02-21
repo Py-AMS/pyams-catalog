@@ -59,17 +59,7 @@ a persistent catalog utility into local site manager:
 
 We have a catalog, we can now create an index:
 
-    >>> from zope.interface import implementer, Interface
-    >>> from zope.schema import TextLine
-    >>> class IContentInterface(Interface):
-    ...     value = TextLine(title="Value property")
-
-    >>> from persistent import Persistent
-    >>> from zope.container.contained import Contained
-    >>> from zope.schema.fieldproperty import FieldProperty
-    >>> @implementer(IContentInterface)
-    ... class MyContent(Persistent, Contained):
-    ...     value = FieldProperty(IContentInterface['value'])
+    >>> from pyams_catalog.testing import IContentInterface, MyContent
 
     >>> from pyams_catalog.index import FieldIndexWithInterface
     >>> from pyams_catalog.generations import check_required_indexes
@@ -100,9 +90,7 @@ The index is created, we can now create and index contents:
 If we try to index another object which doesn't implement index interface, the index is not updated
 even if the object provides the same attribute:
 
-    >>> class MyOtherContent(Persistent, Contained):
-    ...     value = 'Other content value'
-
+    >>> from pyams_catalog.testing import MyOtherContent
     >>> content2 = MyOtherContent()
     >>> app['content2'] = content2
     >>> config.registry.notify(ObjectAddedEvent(content2, app))
@@ -135,6 +123,8 @@ Updating contents
     >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
     >>> result is content
     True
+    >>> list(index.unique_values())
+    ['Modified value']
 
 
 I18n text indexes
@@ -143,12 +133,9 @@ I18n text indexes
 PyAMS_catalog allows to define special indexes to handle I18n attributes as defined into PyAMS_i18n
 packages; you have to create a dedicated index for each language:
 
-    >>> from pyams_i18n.schema import I18nTextLineField
-    >>> class II18nContentInterface(Interface):
-    ...     i18n_value = I18nTextLineField(title="I18n value property")
-
     >>> from hypatia.text.lexicon import Lexicon
     >>> from pyams_catalog.nltk import NltkFullTextProcessor
+    >>> from pyams_catalog.testing import II18nContentInterface
 
     >>> def get_fulltext_lexicon(language):
     ...     return Lexicon(NltkFullTextProcessor(language=language))
@@ -166,9 +153,7 @@ packages; you have to create a dedicated index for each language:
     >>> i18n_index.word_count()
     0
 
-    >>> @implementer(II18nContentInterface)
-    ... class I18nContent(Persistent, Contained):
-    ...     i18n_value = FieldProperty(II18nContentInterface['i18n_value'])
+    >>> from pyams_catalog.testing import I18nContent
 
     >>> i18n_content = I18nContent()
     >>> i18n_content.i18n_value = {'en': 'I18n text value'}
@@ -177,13 +162,6 @@ packages; you have to create a dedicated index for each language:
 
     >>> i18n_index.word_count()
     3
-
-
-Reindexing database contents
-----------------------------
-
-It is always possible to reindex all database contents into the catalog; this feature is used
-by the *pyams_index* command line script.
 
 
 Deleting contents
@@ -200,6 +178,19 @@ Let's now delete these indexed contents:
     >>> config.registry.notify(ObjectRemovedEvent(i18n_content, app))
     >>> i18n_index.word_count()
     0
+
+
+Reindexing database contents
+----------------------------
+
+It is always possible to reindex all database contents into the catalog; this feature is used
+by the *pyams_index* command line script:
+
+    >>> from pyams_catalog.utils import index_site
+    >>> request = DummyRequest(context=app)
+    >>> index_site(request, autocommit=False)
+    Indexing: <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
+    <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
 
 
 Tests cleanup:
