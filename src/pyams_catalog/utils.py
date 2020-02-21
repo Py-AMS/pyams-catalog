@@ -85,7 +85,7 @@ def unindex_object(obj, catalog=''):
                 catalog.unindex_doc(object_id)
 
 
-def index_site(request):
+def index_site(request, autocommit=True):
     """Index all site contents in internal catalog"""
     application = site_factory(request)
     if application is not None:
@@ -107,5 +107,6 @@ def index_site(request):
                         transaction.savepoint()
         finally:
             set_local_registry(None)
-        transaction.commit()
+        if autocommit:
+            transaction.commit()
     return application
