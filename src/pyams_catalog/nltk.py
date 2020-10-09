@@ -15,7 +15,7 @@
 """
 
 import nltk
-from hypatia.text.interfaces import IPipelineElement
+from hypatia.text.interfaces import ISplitter
 from zope.interface import implementer
 
 from pyams_i18n.language import BASE_LANGUAGES
@@ -25,7 +25,7 @@ from pyams_utils.unicode import translate_string
 __docformat__ = 'restructuredtext'
 
 
-@implementer(IPipelineElement)
+@implementer(ISplitter)
 class NltkStemmedTextProcessor:
     """NLTK based text processor using stemmer"""
 
@@ -58,7 +58,7 @@ class NltkStemmedTextProcessor:
         return result
 
 
-@implementer(IPipelineElement)
+@implementer(ISplitter)
 class NltkFullTextProcessor:
     """NLTK based full text processor"""
 
