@@ -19,8 +19,8 @@ import sys
 
 from persistent import Persistent
 from zope.container.contained import Contained
-from zope.interface import Interface, implementer
-from zope.schema import TextLine
+from zope.interface import Attribute, Interface, implementer
+from zope.schema import Datetime, Text, TextLine
 from zope.schema.fieldproperty import FieldProperty
 
 from pyams_i18n.schema import I18nTextLineField
@@ -33,11 +33,25 @@ if sys.argv[-1].endswith('/bin/test'):
     class IContentInterface(Interface):
         """Content interface"""
         value = TextLine(title="Value property")
+        first_date = Datetime(title="First date")
+        keywords = Attribute("Keywords")
+        facets = Attribute("Item facets values")
+        text = Text(title="Text")
 
     @implementer(IContentInterface)
     class MyContent(Persistent, Contained):
         """Content persistent class"""
         value = FieldProperty(IContentInterface['value'])
+        first_date = FieldProperty(IContentInterface['first_date'])
+        text = FieldProperty(IContentInterface['text'])
+
+        @property
+        def keywords(self):
+            return ['category1', 'category2']
+
+        @property
+        def facets(self):
+            return ['category:Content', 'price:0-100']
 
     class MyOtherContent(Persistent, Contained):
         """Other content class"""

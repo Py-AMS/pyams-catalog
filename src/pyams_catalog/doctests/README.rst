@@ -9,7 +9,7 @@ Introduction
 This package is composed of a set of utility functions, usable into any Pyramid application.
 
     >>> from pyramid.testing import setUp, tearDown, DummyRequest
-    >>> config = setUp()
+    >>> config = setUp(hook_zca=True)
     >>> config.registry.settings['zodbconn.uri'] = 'memory://'
 
     >>> from pyramid_zodbconn import includeme as include_zodbconn
@@ -26,8 +26,14 @@ This package is composed of a set of utility functions, usable into any Pyramid 
 NLTK library must first be initialized before using text indexes:
 
     >>> import nltk
-    >>> status = nltk.download('punkt') and nltk.download('snowball_data')
-    >>> status
+    >>> from pyams_utils.context import capture
+    >>> with capture(nltk.download, 'punkt') as (status1, log1):
+    ...     pass
+    >>> status1
+    True
+    >>> with capture(nltk.download, 'snowball_data') as (status2, log2):
+    ...     pass
+    >>> status2
     True
 
 
@@ -48,7 +54,6 @@ a persistent catalog utility into local site manager:
     >>> from pyramid.threadlocal import manager
     >>> from pyams_utils.registry import handle_site_before_traverse
     >>> handle_site_before_traverse(BeforeTraverseEvent(app, request))
-    >>> manager.push({'request': request, 'registry': config.registry})
 
     >>> 'Catalog' in app.getSiteManager()
     True
@@ -57,20 +62,44 @@ a persistent catalog utility into local site manager:
     >>> from pyams_utils.registry import get_utility
     >>> catalog = get_utility(ICatalog)
 
+    >>> from pyams_utils.interfaces import ICacheKeyValue
+    >>> ICacheKeyValue(catalog)
+    'catalog::[]'
+
+
 We have a catalog, we can now create an index:
 
     >>> from pyams_catalog.testing import IContentInterface, MyContent
 
-    >>> from pyams_catalog.index import FieldIndexWithInterface
+    >>> from pyams_catalog.index import FieldIndexWithInterface, DatetimeIndexWithInterface
+    >>> from pyams_catalog.index import KeywordIndexWithInterface, FacetIndexWithInterface
+    >>> from pyams_catalog.index import TextIndexWithInterface
     >>> from pyams_catalog.generations import check_required_indexes
+
     >>> REQUIRED_INDEXES = [('content.value', FieldIndexWithInterface,
-    ...                      {'interface': IContentInterface, 'discriminator': 'value'}), ]
+    ...                      {'interface': IContentInterface, 'discriminator': 'value'}),
+    ...                     ('content.first_date', DatetimeIndexWithInterface,
+    ...                      {'interface': IContentInterface, 'discriminator': 'first_date'}),
+    ...                     ('content.keyword', KeywordIndexWithInterface,
+    ...                      {'interface': IContentInterface, 'discriminator': 'keywords'}),
+    ...                     ('content.facet', FacetIndexWithInterface,
+    ...                      {'interface': IContentInterface, 'discriminator': 'facets',
+    ...                       'facets': ['category', 'price']}),
+    ...                     ('content.text', TextIndexWithInterface,
+    ...                      {'interface': IContentInterface, 'discriminator': 'text'})]
     >>> check_required_indexes(app, REQUIRED_INDEXES)
     >>> 'content.value' in catalog
     True
-    >>> index = catalog['content.value']
-    >>> list(index.unique_values())
+    >>> value_index = catalog['content.value']
+    >>> list(value_index.unique_values())
     []
+    >>> date_index = catalog['content.first_date']
+    >>> keyword_index = catalog['content.keyword']
+    >>> facet_index = catalog['content.facet']
+    >>> text_index = catalog['content.text']
+
+    >>> ICacheKeyValue(catalog)
+    "catalog::['content.facet', 'content.first_date', 'content.keyword', 'content.text', 'content.value']"
 
 
 Indexing contents
@@ -78,14 +107,26 @@ Indexing contents
 
 The index is created, we can now create and index contents:
 
+    >>> from datetime import datetime
+
     >>> content = MyContent()
     >>> content.value = 'Test value'
+    >>> content.first_date = datetime.utcnow()
+    >>> content.text = "This is a long text"
 
     >>> from zope.lifecycleevent import ObjectAddedEvent, ObjectModifiedEvent, ObjectRemovedEvent
     >>> app['content1'] = content
     >>> config.registry.notify(ObjectAddedEvent(content, app))
-    >>> list(index.unique_values())
+    >>> list(value_index.unique_values())
     ['Test value']
+    >>> list(date_index.unique_values())
+    [datetime.datetime(..., ..., ..., 0, 0)]
+    >>> list(keyword_index.unique_values())
+    ['category1', 'category2']
+    >>> list(facet_index.unique_values())
+    ['category', 'price']
+    >>> text_index.word_count()
+    4
 
 If we try to index another object which doesn't implement index interface, the index is not updated
 even if the object provides the same attribute:
@@ -94,8 +135,29 @@ even if the object provides the same attribute:
     >>> content2 = MyOtherContent()
     >>> app['content2'] = content2
     >>> config.registry.notify(ObjectAddedEvent(content2, app))
-    >>> list(index.unique_values())
+    >>> list(value_index.unique_values())
     ['Test value']
+
+
+Using NLTK stemmers
+-------------------
+
+Full-text indexing relies on NLTK package processors; there is a simple fulltext processor, and
+a stemmed processor using a Snowball algorithm:
+
+    >>> from pyams_catalog.nltk import NltkStemmedTextProcessor
+    >>> processor = NltkStemmedTextProcessor('en')
+    >>> processor.process(("This is a text sample for tests",))
+    ['text', 'sampl', 'test']
+    >>> processor.processGlob(("This is a text* sample with globals for tests",))
+    ['text*', 'sampl', 'global', 'test']
+
+    >>> from pyams_catalog.nltk import NltkFullTextProcessor
+    >>> processor = NltkFullTextProcessor('en')
+    >>> processor.process(("This is a text sample for tests",))
+    ['this', 'is', 'text', 'sample', 'for', 'tests']
+    >>> processor.processGlob(("This is a text* sample with globals for tests",))
+    ['this', 'is', 'text*', 'sample', 'with', 'globals', 'for', 'tests']
 
 
 Catalog queries
@@ -108,10 +170,53 @@ Hypatia query which iterates over database objects instead of internal IDs refer
     >>> from hypatia.query import Query, Eq
     >>> from pyams_catalog.query import CatalogResultSet
 
-    >>> params = Eq(index, 'Test value')
+    >>> params = Eq(value_index, 'Test value')
     >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
     >>> result is content
     True
+
+PyAMS_catalog provides a few features, to be able to insert elements before or after the
+initial results set:
+
+    >>> result = CatalogResultSet(CatalogQuery(catalog).query(params))
+    >>> result.prepend(('first1', 'first2'))
+    >>> result.append(('last1', 'last2'))
+    >>> list(result)
+    ['first1', 'first2', <pyams_catalog.testing.MyContent object at 0x...>, 'last1', 'last2']
+
+It's also possible to combine several queries with an "or" or an "and"; it's not really different
+from Hypatia boolean operators, but it allows to combine a query with a null object:
+
+    >>> from pyams_catalog.query import or_, and_
+
+    >>> query1 = params
+    >>> query2 = or_(None, query1)
+    >>> query2
+    <hypatia.query.Eq object at 0x...>
+
+    >>> query2 is query1
+    True
+    >>> query2 = and_(None, query1)
+    >>> query2
+    <hypatia.query.Eq object at 0x...>
+    >>> query2 is query1
+    True
+
+    >>> query2 = params
+    >>> query3 = or_(query1, query2)
+    >>> query3
+    <hypatia.query.Or object at 0x...>
+    >>> query3 is query1
+    False
+    >>> query3 is query2
+    False
+    >>> query3 = and_(query1, query2)
+    >>> query3
+    <hypatia.query.And object at 0x...>
+    >>> query3 is query1
+    False
+    >>> query3 is query2
+    False
 
 
 Updating contents
@@ -119,11 +224,11 @@ Updating contents
 
     >>> content.value = 'Modified value'
     >>> config.registry.notify(ObjectModifiedEvent(content))
-    >>> params = Eq(index, 'Modified value')
+    >>> params = Eq(value_index, 'Modified value')
     >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
     >>> result is content
     True
-    >>> list(index.unique_values())
+    >>> list(value_index.unique_values())
     ['Modified value']
 
 
@@ -171,7 +276,7 @@ Let's now delete these indexed contents:
 
     >>> del app['content1']
     >>> config.registry.notify(ObjectRemovedEvent(content, app))
-    >>> list(index.unique_values())
+    >>> list(value_index.unique_values())
     []
 
     >>> del app['i18n_content']
@@ -191,6 +296,12 @@ by the *pyams_index* command line script:
     >>> index_site(request, autocommit=False)
     Indexing: <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
     <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
+
+    >>> from pyams_catalog.scripts import pyams_index_cmd
+    >>> pyams_index_cmd()
+    Traceback (most recent call last):
+    ...
+    SystemExit: 2
 
 
 Tests cleanup:

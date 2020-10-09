@@ -84,6 +84,11 @@ def get_resolution(value, resolution):
         >>> from pyams_catalog.index import get_resolution
         >>> from datetime import date, datetime
 
+        >>> get_resolution(None, YEAR_RESOLUTION) is None
+        True
+        >>> get_resolution('', DATE_RESOLUTION)
+        ''
+
     Starting with dates:
 
         >>> today = date(2017, 7, 11)
@@ -93,6 +98,8 @@ def get_resolution(value, resolution):
         datetime.date(2017, 7, 1)
         >>> get_resolution(today, DATE_RESOLUTION)
         datetime.date(2017, 7, 11)
+        >>> get_resolution(today, NO_RESOLUTION) is None
+        True
 
     Asking for a resolution higher than DATE with a date input only returns date:
 
@@ -114,6 +121,8 @@ def get_resolution(value, resolution):
         datetime.datetime(2017, 7, 11, 13, 22)
         >>> get_resolution(now, SECOND_RESOLUTION)
         datetime.datetime(2017, 7, 11, 13, 22, 10)
+        >>> get_resolution(now, NO_RESOLUTION) is None
+        True
     """
     if not value:
         return value
