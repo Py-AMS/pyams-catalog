@@ -39,7 +39,7 @@ LOGGER = logging.getLogger('PyAMS (catalog)')
 @adapter_config(context=ICatalog, provides=ICacheKeyValue)
 def catalog_key_adapter(obj):
     """Catalog key value adapter"""
-    return str(frozenset(obj))
+    return 'catalog::{}'.format(str(sorted(obj)))
 
 
 def index_object(obj, catalog='', ignore_notyet=False):
