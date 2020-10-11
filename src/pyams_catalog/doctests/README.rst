@@ -153,15 +153,15 @@ a stemmed processor using a Snowball algorithm:
     >>> processor = NltkStemmedTextProcessor('en')
     >>> processor.process(("This is a text sample for tests",))
     ['text', 'sampl', 'test']
-    >>> processor.processGlob(("This is a text* sample with globals for tests",))
-    ['text*', 'sampl', 'global', 'test']
+    >>> processor.processGlob(("This is a text* sample* with globals for tests",))
+    ['text', 'sampl', 'global', 'test']
 
     >>> from pyams_catalog.nltk import NltkFullTextProcessor
     >>> processor = NltkFullTextProcessor('en')
     >>> processor.process(("This is a text sample for tests",))
     ['this', 'is', 'text', 'sample', 'for', 'tests']
-    >>> processor.processGlob(("This is a text* sample with globals for tests",))
-    ['this', 'is', 'text*', 'sample', 'with', 'globals', 'for', 'tests']
+    >>> processor.processGlob(("This is a text* sample* with globals for tests",))
+    ['this', 'is', 'text', 'sample', 'with', 'globals', 'for', 'tests']
 
 
 Catalog queries
@@ -265,12 +265,56 @@ packages; you have to create a dedicated index for each language:
     >>> from pyams_catalog.testing import I18nContent
 
     >>> i18n_content = I18nContent()
-    >>> i18n_content.i18n_value = {'en': 'I18n text value'}
+    >>> i18n_content.i18n_value = {'en': 'I18n text values'}
     >>> app['i18n_content'] = i18n_content
     >>> config.registry.notify(ObjectAddedEvent(i18n_content, app))
-
     >>> i18n_index.word_count()
     3
+
+    >>> from hypatia.query import Contains
+    >>> params = Contains(i18n_index, 'text OR value')
+    >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
+    >>> result
+    <pyams_catalog.testing.I18nContent object at 0x...>
+    >>> result is i18n_content
+    True
+
+Only exact words queries are supported with a text index using a fulltext processor; you need a
+stemmed processor for this to work:
+
+    >>> params = Contains(i18n_index, 'test AND value')
+    >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
+    Traceback (most recent call last):
+    ...
+    StopIteration
+
+So let's create a text index with a stemmed lexicon:
+
+    >>> from pyams_catalog.nltk import NltkStemmedTextProcessor
+
+    >>> def get_stemmed_lexicon(language):
+    ...     return Lexicon(NltkStemmedTextProcessor(language=language))
+
+    >>> from pyams_catalog.i18n import I18nTextIndexWithInterface
+    >>> REQUIRED_INDEXES = [('content.i18n.stemmed:en', I18nTextIndexWithInterface,
+    ...                      {'language': 'en',
+    ...                       'interface': II18nContentInterface,
+    ...                       'discriminator': 'i18n_value',
+    ...                       'lexicon': lambda: get_stemmed_lexicon('english')}), ]
+    >>> check_required_indexes(app, REQUIRED_INDEXES)
+    >>> 'content.i18n.stemmed:en' in catalog
+    True
+    >>> stem_index = catalog['content.i18n.stemmed:en']
+    >>> stem_index.word_count()
+    0
+    >>> config.registry.notify(ObjectModifiedEvent(i18n_content, app))
+    >>> stem_index.word_count()
+    3
+
+    >>> params = Contains(stem_index, 'text AND value')
+    >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
+    >>> result is i18n_content
+    True
 
 
 Deleting contents
