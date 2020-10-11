@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.5
+-----
+ - updated doctests due to changed NLTK base version
+
 1.0.4
 -----
  - updated doctests
