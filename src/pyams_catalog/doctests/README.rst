@@ -26,14 +26,18 @@ This package is composed of a set of utility functions, usable into any Pyramid 
 NLTK library must first be initialized before using text indexes:
 
     >>> import nltk
-    >>> from pyams_utils.context import capture
-    >>> with capture(nltk.download, 'punkt') as (status1, log1):
+    >>> from pyams_utils.context import capture_all
+    >>> with capture_all(nltk.download, 'punkt') as (status1, log1, errors1):
     ...     pass
     >>> status1
     True
-    >>> with capture(nltk.download, 'snowball_data') as (status2, log2):
+    >>> with capture_all(nltk.download, 'snowball_data') as (status2, log2, errors2):
     ...     pass
     >>> status2
+    True
+    >>> with capture_all(nltk.download, 'stopwords') as (status3, log3, errors3):
+    ...     pass
+    >>> status3
     True
 
 
@@ -297,8 +301,10 @@ by the *pyams_index* command line script:
     Indexing: <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
     <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
 
+    >>> from pyams_utils.context import capture_all
     >>> from pyams_catalog.scripts import pyams_index_cmd
-    >>> pyams_index_cmd()
+    >>> with capture_all(pyams_index_cmd) as (result, output, errors):
+    ...     pass
     Traceback (most recent call last):
     ...
     SystemExit: 2
