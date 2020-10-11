@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.4
+-----
+ - updated doctests
+
 1.0.3
 -----
  - modified catalog cache key adapter
