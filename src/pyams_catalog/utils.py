@@ -36,7 +36,7 @@ __docformat__ = 'restructuredtext'
 LOGGER = logging.getLogger('PyAMS (catalog)')
 
 
-@adapter_config(context=ICatalog, provides=ICacheKeyValue)
+@adapter_config(required=ICatalog, provides=ICacheKeyValue)
 def catalog_key_adapter(obj):
     """Catalog key value adapter"""
     return 'catalog::{}'.format(str(sorted(obj)))
