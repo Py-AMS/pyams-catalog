@@ -1,2 +1,3 @@
 [run]
 source = src/pyams_catalog
+omit = src/pyams_catalog/tests/*
