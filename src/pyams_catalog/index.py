@@ -150,7 +150,7 @@ class DatetimeIndexWithInterface(FieldIndexWithInterface):
         self.resolution = resolution
 
     def discriminate(self, obj, default):
-        value = super(DatetimeIndexWithInterface, self).discriminate(obj, default)
+        value = super().discriminate(obj, default)
         return get_resolution(value, self.resolution)
 
 

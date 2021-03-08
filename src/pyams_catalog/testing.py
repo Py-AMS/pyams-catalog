@@ -47,10 +47,12 @@ if sys.argv[-1].endswith('/bin/test'):
 
         @property
         def keywords(self):
+            """Keywords getter"""
             return ['category1', 'category2']
 
         @property
         def facets(self):
+            """Facets getter"""
             return ['category:Content', 'price:0-100']
 
     class MyOtherContent(Persistent, Contained):
