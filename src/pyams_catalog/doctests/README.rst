@@ -14,6 +14,8 @@ This package is composed of a set of utility functions, usable into any Pyramid 
 
     >>> from pyramid_zodbconn import includeme as include_zodbconn
     >>> include_zodbconn(config)
+    >>> from cornice import includeme as include_cornice
+    >>> include_cornice(config)
     >>> from pyams_utils import includeme as include_utils
     >>> include_utils(config)
     >>> from pyams_site import includeme as include_site
@@ -172,10 +174,10 @@ Hypatia query which iterates over database objects instead of internal IDs refer
 
     >>> from hypatia.catalog import CatalogQuery
     >>> from hypatia.query import Query, Eq
-    >>> from pyams_catalog.query import CatalogResultSet
+    >>> from pyams_catalog.query import ResultSet, CatalogResultSet
 
     >>> params = Eq(value_index, 'Test value')
-    >>> result = next(iter(CatalogResultSet(CatalogQuery(catalog).query(params))))
+    >>> result = next(iter(ResultSet(CatalogQuery(catalog).query(params))))
     >>> result is content
     True
 
