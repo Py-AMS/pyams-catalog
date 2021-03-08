@@ -22,6 +22,29 @@ from pyams_utils.registry import query_utility
 __docformat__ = 'restructuredtext'
 
 
+class ResultSet:
+    """Base catalog query result set wrapper
+
+    This class just wraps a query result to return final objects
+    instead of internal IDs.
+    """
+
+    def __init__(self, query):
+        self.query = query
+        self.intids = query_utility(IIntIds)
+
+    def __iter__(self):
+        intids = self.intids
+        if intids is not None:
+            query = self.query
+            if isinstance(query, Query):
+                query = query.execute()
+            if isinstance(query, tuple):
+                query = query[1]
+            for oid in query:
+                yield intids.queryObject(oid)
+
+
 class CatalogResultSet:
     """Catalog query result set wrapper"""
 
