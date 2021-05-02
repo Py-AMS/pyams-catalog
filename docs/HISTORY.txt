@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.0
+-----
+ - fire IBeforeIndexEvent event before indexing objects into catalog
+
 1.1.0
 -----
  - removed support for Python < 3.7
