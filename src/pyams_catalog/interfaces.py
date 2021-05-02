@@ -15,7 +15,8 @@
 This module provides all package interfaces.
 """
 
-from zope.interface import Interface
+from zope.interface import Interface, implementer
+from zope.interface.interfaces import IObjectEvent, ObjectEvent
 
 
 NLTK_LANGUAGES = {
@@ -47,3 +48,16 @@ YEAR_RESOLUTION = 0
 
 class INoAutoIndex(Interface):
     """Marker interface for objects which shouldn't be automatically indexed"""
+
+
+class IBeforeObjectIndexEvent(IObjectEvent):
+    """Interface of event fired before object indexation
+
+    This event can be useful to be able to initialize some attributes before object
+    is registered into the catalog.
+    """
+
+
+@implementer(IBeforeObjectIndexEvent)
+class BeforeObjectIndexEvent(ObjectEvent):
+    """Event fired before object indexation"""

@@ -11,6 +11,8 @@
 #
 
 """PyAMS_catalog.utils module
+
+This module defines several utility functions which are used to update catalog.
 """
 
 import logging
@@ -22,12 +24,13 @@ from zope.interface import Interface
 from zope.intid.interfaces import IIntIds
 from zope.keyreference.interfaces import NotYet
 
-from pyams_catalog.interfaces import INoAutoIndex
+from pyams_catalog.interfaces import BeforeObjectIndexEvent, INoAutoIndex
 from pyams_site.site import site_factory
 from pyams_utils.adapter import adapter_config
 from pyams_utils.container import find_objects_providing
 from pyams_utils.interfaces import ICacheKeyValue
-from pyams_utils.registry import get_utility, query_utility, set_local_registry
+from pyams_utils.registry import get_pyramid_registry, get_utility, query_utility, \
+    set_local_registry
 
 
 __docformat__ = 'restructuredtext'
@@ -56,6 +59,7 @@ def index_object(obj, catalog='', ignore_notyet=False):
             if isinstance(catalog, str):
                 catalog = query_utility(ICatalog, name=catalog)
             if catalog is not None:
+                get_pyramid_registry().notify(BeforeObjectIndexEvent(obj))
                 catalog.index_doc(object_id, obj)
 
 
@@ -69,11 +73,12 @@ def reindex_object(obj, catalog=''):
             if isinstance(catalog, str):
                 catalog = query_utility(ICatalog, name=catalog)
             if catalog is not None:
+                get_pyramid_registry().notify(BeforeObjectIndexEvent(obj))
                 catalog.reindex_doc(object_id, obj)
 
 
 def unindex_object(obj, catalog=''):
-    """Unindex given object from catalog"""
+    """Un-index given object from catalog"""
     LOGGER.debug("Un-indexing object {0!r}".format(obj))
     intids = query_utility(IIntIds)
     if intids is not None:
