@@ -15,9 +15,21 @@
 This module is used for Pyramid integration
 """
 
+import re
+
+
 __docformat__ = 'restructuredtext'
 
 
 def include_package(config):
     """Pyramid package include"""
-    config.scan()
+
+    # add translations
+    config.add_translation_dirs('pyams_catalog:locales')
+
+    try:
+        import pyams_zmi
+    except ImportError:
+        config.scan(ignore=[re.compile(r'pyams_catalog\..*\.zmi\.?.*').search])
+    else:
+        config.scan()
