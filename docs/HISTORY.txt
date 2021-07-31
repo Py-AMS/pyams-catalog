@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.3.0
+-----
+ - added catalog label adapter
+ - updated package include scan
+
 1.2.0
 -----
  - fire IBeforeIndexEvent event before indexing objects into catalog
