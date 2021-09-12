@@ -161,9 +161,9 @@ a stemmed processor using a Snowball algorithm:
     >>> from pyams_catalog.nltk import NltkFullTextProcessor
     >>> processor = NltkFullTextProcessor('en')
     >>> processor.process(("This is a text sample for tests",))
-    ['this', 'is', 'text', 'sample', 'for', 'tests']
+    ['this*', 'is*', 'text*', 'sample*', 'for*', 'tests*']
     >>> processor.processGlob(("This is a text* sample* with globals for tests",))
-    ['this', 'is', 'text', 'sample', 'with', 'globals', 'for', 'tests']
+    ['this*', 'is*', 'text*', 'sample*', 'with*', 'globals*', 'for*', 'tests*']
 
 
 Catalog queries
