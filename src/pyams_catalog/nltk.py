@@ -72,8 +72,11 @@ class NltkFullTextProcessor:
         result = []
         for s in lst:  # pylint: disable=invalid-name
             translated = translate_string(s, keep_chars="'-").replace("'", ' ')
-            result += [token for token in nltk.word_tokenize(translated, self.language)
-                       if token and len(token) > 1]
+            result += [
+                '{}*'.format(token)
+                for token in nltk.word_tokenize(translated, self.language)
+                if token and len(token) > 1
+            ]
         return result
 
     def processGlob(self, lst):  # pylint: disable=invalid-name
@@ -81,6 +84,9 @@ class NltkFullTextProcessor:
         result = []
         for s in lst:  # pylint: disable=invalid-name
             translated = translate_string(s, keep_chars="'-*?").replace("'", ' ')
-            result += [token for token in nltk.word_tokenize(translated, self.language)
-                       if token and len(token) > 1]
+            result += [
+                '{}*'.format(token)
+                for token in nltk.word_tokenize(translated, self.language)
+                if token and len(token) > 1
+            ]
         return result
