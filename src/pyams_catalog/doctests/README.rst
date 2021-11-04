@@ -245,11 +245,8 @@ PyAMS_catalog allows to define special indexes to handle I18n attributes as defi
 packages; you have to create a dedicated index for each language:
 
     >>> from hypatia.text.lexicon import Lexicon
-    >>> from pyams_catalog.nltk import NltkFullTextProcessor
+    >>> from pyams_catalog.nltk import NltkFullTextProcessor, get_fulltext_lexicon
     >>> from pyams_catalog.testing import II18nContentInterface
-
-    >>> def get_fulltext_lexicon(language):
-    ...     return Lexicon(NltkFullTextProcessor(language=language))
 
     >>> from pyams_catalog.i18n import I18nTextIndexWithInterface
     >>> REQUIRED_INDEXES = [('content.i18n:en', I18nTextIndexWithInterface,

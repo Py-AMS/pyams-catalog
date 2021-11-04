@@ -15,6 +15,7 @@
 """
 
 import nltk
+from hypatia.text import Lexicon
 from hypatia.text.interfaces import ISplitter
 from zope.interface import implementer
 
@@ -90,3 +91,11 @@ class NltkFullTextProcessor:
                 if token and len(token) > 1
             ]
         return result
+
+
+def get_fulltext_lexicon(language):
+    """Fulltext lexicon creator
+
+    :param language: lexicon language code, defined with two lowercase letters ('en', 'fr'...)
+    """
+    return Lexicon(NltkFullTextProcessor(language=language))
