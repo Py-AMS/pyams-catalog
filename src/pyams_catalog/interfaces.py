@@ -19,6 +19,8 @@ from zope.interface import Interface, implementer
 from zope.interface.interfaces import IObjectEvent, ObjectEvent
 
 
+DISABLE_CATALOG_SETTINGS_KEY = 'pyams_catalog.disable_indexing'
+
 NLTK_LANGUAGES = {
     'da': 'danish',
     'nl': 'dutch',
