@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.0.0
+-----
+ - migrated to Pyramid 2.0
+ - added support for Python 3.10 and 3.11
+
 1.3.2
 -----
  - added fulltext lexicon creation helper
