@@ -341,8 +341,8 @@ by the *pyams_index* command line script:
     >>> from pyams_catalog.utils import index_site
     >>> request = DummyRequest(context=app)
     >>> index_site(request, autocommit=False)
-    Indexing: <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
-    <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <Connection at ...>>
+    Indexing: <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <ZODB.Connection.Connection object at 0x...>>
+    <pyams_site.site.BaseSiteRoot object at 0x... oid 0x1 in <ZODB.Connection.Connection object at 0x...>>
 
     >>> from pyams_utils.context import capture_all
     >>> from pyams_catalog.scripts import pyams_index_cmd
