@@ -27,11 +27,10 @@ from zope.keyreference.interfaces import NotYet
 from pyams_catalog.interfaces import BeforeObjectIndexEvent, INoAutoIndex
 from pyams_site.site import site_factory
 from pyams_utils.adapter import adapter_config
-from pyams_utils.container import find_objects_providing
+from pyams_utils.finder import find_objects_providing
 from pyams_utils.interfaces import ICacheKeyValue
 from pyams_utils.registry import get_pyramid_registry, get_utility, query_utility, \
     set_local_registry
-
 
 __docformat__ = 'restructuredtext'
 
