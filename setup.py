@@ -23,7 +23,7 @@ DOCS = os.path.join(os.path.dirname(__file__),
 README = os.path.join(DOCS, 'README.rst')
 HISTORY = os.path.join(DOCS, 'HISTORY.rst')
 
-version = '2.0.1'
+version = '2.0.2'
 long_description = open(README).read() + '\n\n' + open(HISTORY).read()
 
 tests_require = [
@@ -69,7 +69,7 @@ setup(name='pyams_catalog',
           'persistent',
           'pyams_i18n',
           'pyams_site',
-          'pyams_utils >= 1.3.3',
+          'pyams_utils >= 2.2.0',
           'pyramid >= 2.0.0',
           'transaction',
           'zodbupdate',
