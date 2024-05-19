@@ -75,7 +75,8 @@ class CatalogResultSet:
             yield item
 
     def __len__(self):
-        return len(self.first) + len(self.query) + len(self.last)
+        nb_docs, docs = self.query
+        return len(self.first) + nb_docs + len(self.last)
 
     def prepend(self, items):
         """Insert a list of elements at the beginning of the results set"""
