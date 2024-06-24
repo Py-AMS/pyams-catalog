@@ -75,7 +75,10 @@ class CatalogResultSet:
             yield item
 
     def __len__(self):
-        nb_docs, docs = self.query
+        if isinstance(self.query, ResultSet):
+            nb_docs = len(self.query)
+        else:
+            nb_docs = self.query[0]
         return len(self.first) + nb_docs + len(self.last)
 
     def prepend(self, items):
