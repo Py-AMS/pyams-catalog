@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.0.3
+-----
+ - updated catalog resultset length getter
+
 2.0.2
 -----
  - moved PyAMS_utils finder helper to new module
