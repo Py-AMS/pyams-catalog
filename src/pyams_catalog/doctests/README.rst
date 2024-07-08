@@ -315,6 +315,18 @@ So let's create a text index with a stemmed lexicon:
     >>> result is i18n_content
     True
 
+We can also create a query filter based on null, empty or unindexed values:
+
+    >>> from pyams_catalog.query import IsNone
+    >>> params = IsNone(keyword_index)
+    >>> result = list(CatalogResultSet(CatalogQuery(catalog).query(params)))
+    >>> len(result)
+    2
+    >>> getattr(content2, 'keywords', None) is None
+    True
+    >>> content2 in result
+    True
+
 
 Deleting contents
 -----------------

@@ -13,13 +13,23 @@
 """PyAMS_catalog.query module
 """
 
-from hypatia.query import Query
+from hypatia.query import Comparator, Query
 from zope.intid.interfaces import IIntIds
 
 from pyams_utils.registry import query_utility
 
 
 __docformat__ = 'restructuredtext'
+
+
+class IsNone(Comparator):
+    """Index query search for None values"""
+
+    def __init__(self, index):
+        super().__init__(index, None)
+
+    def _apply(self, name):
+        return self.index.not_indexed()
 
 
 class ResultSet:
