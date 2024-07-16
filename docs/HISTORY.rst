@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.1.0
+-----
+ - added index comparator to get null or un-indexed values
+
 2.0.3
 -----
  - updated catalog resultset length getter
