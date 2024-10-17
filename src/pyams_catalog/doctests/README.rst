@@ -33,13 +33,17 @@ NLTK library must first be initialized before using text indexes:
     ...     pass
     >>> status1
     True
-    >>> with capture_all(nltk.download, 'snowball_data') as (status2, log2, errors2):
+    >>> with capture_all(nltk.download, 'punkt_tab') as (status2, log2, errors2):
     ...     pass
     >>> status2
     True
-    >>> with capture_all(nltk.download, 'stopwords') as (status3, log3, errors3):
+    >>> with capture_all(nltk.download, 'snowball_data') as (status3, log3, errors3):
     ...     pass
     >>> status3
+    True
+    >>> with capture_all(nltk.download, 'stopwords') as (status4, log4, errors4):
+    ...     pass
+    >>> status4
     True
 
 
@@ -92,7 +96,9 @@ We have a catalog, we can now create an index:
     ...                      {'interface': IContentInterface, 'discriminator': 'facets',
     ...                       'facets': ['category', 'price']}),
     ...                     ('content.text', TextIndexWithInterface,
-    ...                      {'interface': IContentInterface, 'discriminator': 'text'})]
+    ...                      {'interface': IContentInterface, 'discriminator': 'text'}),
+    ...                     ('content.empty', FieldIndexWithInterface,
+    ...                      {'interface': IContentInterface, 'discriminator': 'empty'})]
     >>> check_required_indexes(app, REQUIRED_INDEXES)
     >>> 'content.value' in catalog
     True
@@ -105,7 +111,7 @@ We have a catalog, we can now create an index:
     >>> text_index = catalog['content.text']
 
     >>> ICacheKeyValue(catalog)
-    "catalog::['content.facet', 'content.first_date', 'content.keyword', 'content.text', 'content.value']"
+    "catalog::['content.empty', 'content.facet', 'content.first_date', 'content.keyword', 'content.text', 'content.value']"
 
 
 Indexing contents
@@ -315,17 +321,32 @@ So let's create a text index with a stemmed lexicon:
     >>> result is i18n_content
     True
 
-We can also create a query filter based on null, empty or unindexed values:
+We can also create a query filter based on null, empty or unindexed values. But keep in mind that only contents
+which implement index interface are returned by "IsNone" operator:
 
     >>> from pyams_catalog.query import IsNone
+
+    >>> empty_index = catalog['content.empty']
+
+    >>> params = IsNone(empty_index)
+    >>> result = list(CatalogResultSet(CatalogQuery(catalog).query(params)))
+    >>> empty_index.interface.providedBy(content)
+    True
+    >>> len(result)
+    1
+    >>> content in result
+    True
+
     >>> params = IsNone(keyword_index)
     >>> result = list(CatalogResultSet(CatalogQuery(catalog).query(params)))
+    >>> keyword_index.interface.providedBy(content2)
+    False
     >>> len(result)
-    2
+    0
     >>> getattr(content2, 'keywords', None) is None
     True
     >>> content2 in result
-    True
+    False
 
 
 Deleting contents

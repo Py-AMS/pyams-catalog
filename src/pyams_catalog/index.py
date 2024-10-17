@@ -14,6 +14,9 @@
 
 This module provides several Hypatia indexes which use a discriminator based on interface
 support of indexes objects.
+
+WARNING: objects which don't implement the requested interface are not referenced in the index, including
+in the "not indexed" part.
 """
 
 from datetime import date, datetime
@@ -29,7 +32,6 @@ from persistent import Persistent
 
 from pyams_catalog.interfaces import DATE_RESOLUTION, NO_RESOLUTION
 from pyams_catalog.nltk import NltkFullTextProcessor
-
 
 __docformat__ = 'restructuredtext'
 
@@ -67,6 +69,14 @@ class InterfaceSupportIndexMixin(BaseIndexMixin):
             raise ValueError('Catalog cannot index broken object {0!r}'.format(value))
 
         return value
+    
+    def index_doc(self, docid, obj):
+        """See interface IIndexInjection"""
+        if self.interface is not None:
+            obj = self.interface(obj, None)
+            if obj is None:
+                return None
+        return super().index_doc(docid, obj)
 
 
 class FieldIndexWithInterface(InterfaceSupportIndexMixin, FieldIndex):

@@ -37,6 +37,7 @@ if sys.argv[-1].endswith('/bin/test'):
         keywords = Attribute("Keywords")
         facets = Attribute("Item facets values")
         text = Text(title="Text")
+        empty = Text(title="Empty text")
 
     @implementer(IContentInterface)
     class MyContent(Persistent, Contained):
@@ -44,6 +45,7 @@ if sys.argv[-1].endswith('/bin/test'):
         value = FieldProperty(IContentInterface['value'])
         first_date = FieldProperty(IContentInterface['first_date'])
         text = FieldProperty(IContentInterface['text'])
+        empty = FieldProperty(IContentInterface['empty'])
 
         @property
         def keywords(self):
