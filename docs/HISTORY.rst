@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.0
+-----
+ - updated interfaces support in catalog indexes, so that objects which don't implement
+   an index interface are not referenced anymore in the index; this can lead to different
+   behaviour when using the IsNone comparator, as these objects are not referenced anymore
+   in the "not indexed" part of the index!
+
 2.1.0
 -----
  - added index comparator to get null or un-indexed values
