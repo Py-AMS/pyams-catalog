@@ -38,7 +38,8 @@ __docformat__ = 'restructuredtext'
 LOGGER = logging.getLogger('PyAMS (catalog)')
 
 
-@adapter_config(required=ICatalog, provides=ICacheKeyValue)
+@adapter_config(required=ICatalog,
+                provides=ICacheKeyValue)
 def catalog_key_adapter(obj):
     """Catalog key value adapter"""
     return 'catalog::{}'.format(str(sorted(obj)))
@@ -46,7 +47,7 @@ def catalog_key_adapter(obj):
 
 def index_object(obj, catalog='', ignore_notyet=False):
     """Index given object into catalog"""
-    LOGGER.debug("Indexing object {0!r}".format(obj))
+    LOGGER.debug(f"Indexing object {obj!r}")
     intids = query_utility(IIntIds)
     if intids is not None:
         try:
@@ -64,7 +65,7 @@ def index_object(obj, catalog='', ignore_notyet=False):
 
 def reindex_object(obj, catalog=''):
     """Reindex given object into catalog"""
-    LOGGER.debug("Re-indexing object {0!r}".format(obj))
+    LOGGER.debug(f"Re-indexing object {obj!r}")
     intids = query_utility(IIntIds)
     if intids is not None:
         object_id = intids.queryId(obj)
@@ -78,7 +79,7 @@ def reindex_object(obj, catalog=''):
 
 def unindex_object(obj, catalog=''):
     """Un-index given object from catalog"""
-    LOGGER.debug("Un-indexing object {0!r}".format(obj))
+    LOGGER.debug(f"Un-indexing object {obj!r}")
     intids = query_utility(IIntIds)
     if intids is not None:
         object_id = intids.queryId(obj)
@@ -103,9 +104,9 @@ def index_site(request, autocommit=True):
                 if INoAutoIndex.providedBy(document):
                     continue
                 if IBroken.providedBy(document):
-                    print("Skipping broken object: {0!r}".format(document))
+                    print(f"Skipping broken object: {document!r}")
                 else:
-                    print("Indexing: {0!r}".format(document))
+                    print(f"{index+1:10}: Indexing {document!r}")
                     catalog.reindex_doc(intids.register(document), document)
                     if not index % 100:
                         transaction.savepoint()
