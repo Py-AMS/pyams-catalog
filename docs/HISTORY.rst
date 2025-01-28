@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.1
+-----
+ - updated index script logging
+ - added support for Python 3.12
+
 2.2.0
 -----
  - updated interfaces support in catalog indexes, so that objects which don't implement
